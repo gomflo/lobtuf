@@ -1,0 +1,135 @@
+---
+interface Props {
+  matches: Array<{
+    hora: string;
+    competicion: string;
+    equipoLocal: string;
+    equipoVisitante: string;
+    canales: string[];
+  }>;
+}
+
+const { matches } = Astro.props;
+
+// Agrupar partidos por competición
+const groupedMatches = matches.reduce((acc, match) => {
+  if (!acc[match.competicion]) {
+    acc[match.competicion] = [];
+  }
+  acc[match.competicion].push(match);
+  return acc;
+}, {} as Record<string, typeof matches>);
+
+// Obtener las competiciones ordenadas
+const competiciones = Object.keys(groupedMatches).sort();
+
+// Crear un array plano de elementos para renderizar (header + partidos)
+type TableRow = { type: 'header'; competicion: string } | { type: 'match'; match: typeof matches[0] };
+const tableRows: TableRow[] = [];
+competiciones.forEach((competicion) => {
+  tableRows.push({ type: 'header', competicion });
+  groupedMatches[competicion].forEach((match) => {
+    tableRows.push({ type: 'match', match });
+  });
+});
+---
+
+{/* Versión Desktop - Tabla */}
+<div class="hidden md:block overflow-x-auto w-full">
+  <table class="w-full border-collapse">
+    <tbody>
+      {tableRows.map((row) => {
+        if (row.type === 'header') {
+          return (
+            <tr class="bg-white border-b border-black">
+              <td colspan="3" class="py-3 px-4 md:px-8">
+                <span class="text-black font-semibold text-sm md:text-base">
+                  {row.competicion}
+                </span>
+              </td>
+            </tr>
+          );
+        } else {
+          const match = row.match;
+          return (
+            <tr 
+              class="group border-b border-black hover:bg-gray-100 transition-colors duration-200"
+            >
+              <td class="py-3 px-4 md:px-8 text-black group-hover:text-black font-medium text-sm whitespace-nowrap">{match.hora}</td>
+              <td class="py-3 px-4 md:px-8">
+                <div class="flex items-center gap-2 md:gap-4 min-w-0">
+                  <span class="text-black group-hover:text-black font-medium text-sm truncate">
+                    {match.equipoLocal}
+                  </span>
+                  <span class="text-black group-hover:text-black font-medium text-xs flex-shrink-0">—</span>
+                  <span class="text-black group-hover:text-black font-medium text-sm truncate">
+                    {match.equipoVisitante}
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-4 md:px-8">
+                <div class="flex items-center gap-1.5 md:gap-2 flex-nowrap">
+                  {match.canales.map((canal) => (
+                    <span class="text-xs font-medium text-black border border-black px-2 md:px-3 py-1 md:py-1.5 bg-white group-hover:bg-white group-hover:text-black whitespace-nowrap flex-shrink-0">
+                      {canal}
+                    </span>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          );
+        }
+      })}
+    </tbody>
+  </table>
+</div>
+
+{/* Versión Móvil - Tarjetas */}
+<div class="block md:hidden w-full">
+  {tableRows.map((row) => {
+    if (row.type === 'header') {
+      return (
+        <div class="bg-white border-b border-black py-3 px-4">
+          <span class="text-black font-semibold text-sm">
+            {row.competicion}
+          </span>
+        </div>
+      );
+    } else {
+      const match = row.match;
+      return (
+        <div class="border-b border-black hover:bg-gray-100 transition-colors duration-200 py-3 px-4">
+          <div class="flex items-center gap-3 flex-wrap">
+            {/* Hora */}
+            <span class="text-black font-medium text-sm whitespace-nowrap">
+              {match.hora}
+            </span>
+            
+            {/* Equipos */}
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <span class="text-black font-medium text-sm truncate">
+                {match.equipoLocal}
+              </span>
+              <span class="text-black font-medium text-xs flex-shrink-0">—</span>
+              <span class="text-black font-medium text-sm truncate">
+                {match.equipoVisitante}
+              </span>
+            </div>
+            
+            {/* Canales */}
+            {match.canales.length > 0 && (
+              <div class="flex flex-wrap gap-1.5">
+                {match.canales.map((canal) => (
+                  <span class="text-xs font-medium text-black border border-black px-2 py-1 bg-white whitespace-nowrap">
+                    {canal}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+  })}
+</div>
+

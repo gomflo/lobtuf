@@ -1,0 +1,48 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import MatchTable from "../../components/MatchTable.astro";
+import { readMatches, filterMatches } from "../../utils/readMatches";
+
+const { competicion } = Astro.params;
+const decodedCompeticion = competicion ? decodeURIComponent(competicion) : "";
+const allMatches = readMatches();
+const competitionMatches = filterMatches(
+  allMatches,
+  "",
+  decodedCompeticion,
+  undefined
+);
+
+if (!competicion || competitionMatches.length === 0) {
+  return Astro.redirect("/");
+}
+---
+
+<Layout title={`Partidos de ${decodedCompeticion}`}>
+  <main class="bg-white">
+    <div class="container mx-auto px-8 py-16 max-w-5xl bg-white">
+      <div class="mb-16 bg-white">
+        <a
+          href="/"
+          class="inline-flex items-center text-black hover:text-black mb-8 text-sm font-medium transition-colors"
+        >
+          ← Volver al inicio
+        </a>
+        <h1
+          class="text-4xl sm:text-5xl font-medium text-black mb-4 tracking-tight"
+        >
+          {decodedCompeticion}
+        </h1>
+        <p class="text-black font-medium text-base">
+          {competitionMatches.length} partido{
+            competitionMatches.length !== 1 ? "s" : ""
+          } encontrado{competitionMatches.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+    </div>
+
+    <div class="w-full bg-white overflow-hidden">
+      <MatchTable matches={competitionMatches} />
+    </div>
+  </main>
+</Layout>

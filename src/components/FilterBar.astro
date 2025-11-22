@@ -1,0 +1,60 @@
+---
+interface Props {
+  competitions: string[];
+  selectedCompetition?: string;
+}
+
+const { competitions, selectedCompetition = "" } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-3 mb-10">
+  <select
+    id="competition-filter"
+    class="px-0 py-3 border-0 border-b border-primary-300 bg-transparent focus:border-primary-500 outline-none text-primary-700 font-normal text-sm cursor-pointer transition-colors"
+  >
+    <option value="" class="bg-white">Todas las competiciones</option>
+    {competitions.map((comp) => (
+      <option value={comp} selected={comp === selectedCompetition} class="bg-white">
+        {comp}
+      </option>
+    ))}
+  </select>
+</div>
+
+<script>
+  const filterSelect = document.getElementById('competition-filter');
+  if (filterSelect) {
+    const filterCards = () => {
+      const selectedComp = filterSelect.value;
+      const searchInput = document.getElementById('search-input');
+      const searchTerm = searchInput?.value.toLowerCase() || '';
+      const cards = document.querySelectorAll('[data-match-card]');
+      
+      cards.forEach((card) => {
+        const cardComp = card.getAttribute('data-competition') || '';
+        const cardText = card.textContent.toLowerCase();
+        const matchesCompetition = !selectedComp || cardComp === selectedComp;
+        const matchesSearch = !searchTerm || cardText.includes(searchTerm);
+        
+        if (matchesCompetition && matchesSearch) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      // Disparar evento personalizado para notificar cambios
+      const event = new CustomEvent('filtersChanged');
+      document.dispatchEvent(event);
+    };
+    
+    filterSelect.addEventListener('change', filterCards);
+    
+    // También filtrar cuando cambia la búsqueda
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', filterCards);
+    }
+  }
+</script>
+

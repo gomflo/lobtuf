@@ -1,0 +1,55 @@
+---
+interface Props {
+  hora: string;
+  competicion: string;
+  equipoLocal: string;
+  equipoVisitante: string;
+  canales: string[];
+}
+
+const { hora, competicion, equipoLocal, equipoVisitante, canales } = Astro.props;
+---
+
+<div class="bg-white border-b border-primary-200 py-8 hover:bg-primary-50 transition-colors duration-200">
+  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+    <!-- Hora y Competición -->
+    <div class="flex flex-col gap-3">
+      <div class="flex items-baseline gap-4">
+        <span class="text-xl font-light text-primary-800 tracking-wide">{hora}</span>
+        <a
+          href={`/competiciones/${encodeURIComponent(competicion)}`}
+          class="text-xs font-light text-primary-500 hover:text-primary-700 transition-colors uppercase tracking-wider"
+        >
+          {competicion}
+        </a>
+      </div>
+      
+      <!-- Equipos -->
+      <div class="flex items-center gap-4 mt-1">
+        <a
+          href={`/equipos/${encodeURIComponent(equipoLocal)}`}
+          class="text-base font-light text-primary-800 hover:text-primary-600 transition-colors"
+        >
+          {equipoLocal}
+        </a>
+        <span class="text-primary-400 font-light text-sm">—</span>
+        <a
+          href={`/equipos/${encodeURIComponent(equipoVisitante)}`}
+          class="text-base font-light text-primary-800 hover:text-primary-600 transition-colors"
+        >
+          {equipoVisitante}
+        </a>
+      </div>
+    </div>
+
+    <!-- Canales -->
+    <div class="flex flex-wrap gap-2">
+      {canales.map((canal) => (
+        <span class="px-3 py-1 text-xs font-light text-primary-600 border border-primary-200 bg-white">
+          {canal}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>
+

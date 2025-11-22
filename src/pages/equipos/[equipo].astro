@@ -1,0 +1,40 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import MatchTable from '../../components/MatchTable.astro';
+import { readMatches, filterMatches } from '../../utils/readMatches';
+
+const { equipo } = Astro.params;
+const decodedEquipo = equipo ? decodeURIComponent(equipo) : '';
+const allMatches = readMatches();
+const teamMatches = filterMatches(allMatches, '', undefined, decodedEquipo);
+
+if (!equipo || teamMatches.length === 0) {
+  return Astro.redirect('/');
+}
+---
+
+<Layout title={`Partidos de ${decodedEquipo}`}>
+  <main>
+    <div class="container mx-auto px-8 py-16 max-w-5xl">
+      <div class="mb-16">
+        <a
+          href="/"
+          class="inline-flex items-center text-black hover:text-black mb-8 text-sm font-medium transition-colors"
+        >
+          ← Volver al inicio
+        </a>
+        <h1 class="text-4xl sm:text-5xl font-medium text-black mb-4 tracking-tight">
+          Partidos de {decodedEquipo}
+        </h1>
+        <p class="text-black font-medium text-base">
+          {teamMatches.length} partido{teamMatches.length !== 1 ? 's' : ''} encontrado{teamMatches.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+    </div>
+
+    <div class="w-full bg-white overflow-hidden">
+      <MatchTable matches={teamMatches} />
+    </div>
+  </main>
+</Layout>
+

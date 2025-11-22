@@ -1,0 +1,10 @@
+node_modules/
+*.json
+!package.json
+*.log
+.DS_Store
+
+# Astro
+.astro/
+dist/
+

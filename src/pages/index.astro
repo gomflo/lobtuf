@@ -1,0 +1,137 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MatchTable from "../components/MatchTable.astro";
+import { readMatches, getUniqueCompetitions, filterMatches } from "../utils/readMatches";
+
+const allMatches = readMatches();
+
+// Obtener parámetros de URL para mensajes y filtros
+const url = Astro.url;
+const error = url.searchParams.get("error");
+const success = url.searchParams.get("success");
+const competitionParam = url.searchParams.get("competicion");
+const selectedCompetition = competitionParam ? decodeURIComponent(competitionParam) : "";
+
+// Obtener competiciones únicas y filtrar partidos
+const competitions = getUniqueCompetitions(allMatches);
+const matches = selectedCompetition 
+  ? filterMatches(allMatches, "", selectedCompetition, undefined)
+  : allMatches;
+---
+
+<Layout title="lobtuf">
+  <main>
+    {
+      error === "scrape_failed" && (
+        <div class="container mx-auto px-8 py-6 max-w-5xl">
+          <div class="mb-6 py-3 border-b border-black">
+            <p class="text-black text-sm font-medium">
+              Error al actualizar los partidos. Por favor, intenta nuevamente.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      success === "true" && (
+        <div class="container mx-auto px-8 py-6 max-w-5xl">
+          <div class="mb-6 py-3 border-b border-black">
+            <p class="text-black text-sm font-medium">
+              Partidos actualizados correctamente.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      allMatches.length === 0 ? (
+        <div class="container mx-auto px-8 py-12 max-w-5xl text-center">
+          <p class="text-black text-sm font-medium">
+            No hay partidos programados para hoy.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div class="mb-6 px-4 md:ml-[30px] md:mr-[30px] md:px-0 overflow-x-auto">
+            <div class="flex gap-2" style="min-width: max-content;">
+              <button
+                data-competition=""
+                tabindex="0"
+                aria-label="Filtrar por todas las competiciones"
+                aria-pressed={!selectedCompetition}
+                class={`px-4 py-2 border border-black text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-black whitespace-nowrap flex-shrink-0 ${
+                  !selectedCompetition 
+                    ? 'bg-black text-white' 
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                Todas las competiciones
+              </button>
+              {competitions.map((comp) => (
+                <button
+                  data-competition={comp}
+                  tabindex="0"
+                  aria-label={`Filtrar por ${comp}`}
+                  aria-pressed={comp === selectedCompetition}
+                  class={`px-4 py-2 border border-black text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-black whitespace-nowrap flex-shrink-0 ${
+                    comp === selectedCompetition 
+                      ? 'bg-black text-white' 
+                      : 'bg-white text-black hover:bg-gray-100'
+                  }`}
+                >
+                  {comp}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {
+            matches.length === 0 ? (
+              <div class="container mx-auto px-8 py-12 max-w-5xl text-center">
+                <p class="text-black text-sm font-medium">
+                  No hay partidos para la competición seleccionada.
+                </p>
+              </div>
+            ) : (
+              <div class="w-full bg-white overflow-hidden">
+                <MatchTable matches={matches} />
+              </div>
+            )
+          }
+        </>
+      )
+    }
+  </main>
+</Layout>
+
+<script>
+  const handleCompetitionFilter = (competition) => {
+    const url = new URL(window.location.href);
+    
+    if (competition) {
+      url.searchParams.set('competicion', encodeURIComponent(competition));
+    } else {
+      url.searchParams.delete('competicion');
+    }
+    
+    window.location.href = url.toString();
+  };
+
+  const competitionButtons = document.querySelectorAll('[data-competition]');
+  competitionButtons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      const selectedValue = e.currentTarget.getAttribute('data-competition');
+      handleCompetitionFilter(selectedValue);
+    });
+
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const selectedValue = e.currentTarget.getAttribute('data-competition');
+        handleCompetitionFilter(selectedValue);
+      }
+    });
+  });
+</script>

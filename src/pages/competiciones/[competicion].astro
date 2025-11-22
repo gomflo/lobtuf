@@ -1,7 +1,20 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import MatchTable from "../../components/MatchTable.astro";
-import { readMatches, filterMatches } from "../../utils/readMatches";
+import {
+  readMatches,
+  filterMatches,
+  getUniqueCompetitions,
+} from "../../utils/readMatches";
+
+export async function getStaticPaths() {
+  const allMatches = readMatches();
+  const competitions = getUniqueCompetitions(allMatches);
+
+  return competitions.map((competicion) => ({
+    params: { competicion: encodeURIComponent(competicion) },
+  }));
+}
 
 const { competicion } = Astro.params;
 const decodedCompeticion = competicion ? decodeURIComponent(competicion) : "";

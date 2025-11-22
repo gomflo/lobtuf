@@ -4,6 +4,10 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// Esta ruta solo funciona en modo servidor/híbrido
+// En modo estático, esta ruta no estará disponible
+export const prerender = false;
+
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const redirect = url.searchParams.get('redirect') !== 'false';
